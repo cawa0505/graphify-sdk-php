@@ -1,0 +1,4 @@
+/vendor/
+/.opencode/
+/graphify-out/
+/.phpunit.cache/

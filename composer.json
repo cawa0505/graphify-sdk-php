@@ -1,0 +1,32 @@
+{
+    "name": "graphify/sdk-php",
+    "description": "Graphify PHP SDK — access Graphify's knowledge graph capabilities via MCP protocol",
+    "type": "library",
+    "keywords": ["graphify", "knowledge-graph", "mcp", "code-analysis", "static-analysis"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Graphify Contributors",
+            "homepage": "https://github.com/cawa0505/GraphifySDK"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Graphify\\Sdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Graphify\\Sdk\\Test\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "minimum-stability": "stable"
+}
