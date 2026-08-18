@@ -34,14 +34,17 @@ large PHP/Laravel ecosystem. It enables:
 - **MCP Transport**: Stdio/JSON-RPC communication with `graphify-mcp`
 - **Full Tool Coverage**: All 24+ graphify-mcp tools wrapped as PHP methods
 - **DTO Layer**: Strongly-typed PHP objects for all core data types
-- **Workspace Management**: Automatic `workspace_key` derivation from project path
+- **Plugin SDK**: `PluginHost` — JSON-RPC stdio host for building PHP-based Graphify plugins
+- **Workspace Management**: Automatic `workspace_key` derivation from project path (crc32 hash)
 - **Error Handling**: Typed exception hierarchy (transport, protocol, engine)
+- **Test Coverage**: PHPUnit tests for DTOs, Client, and PluginHost
 
 ### Out of scope (v1)
 
 - HTTP transport (Stdio-only in v1)
 - Plugin registration in `graphify.toml` (covered by docs, not SDK code)
 - Async/parallel tool calls (single-threaded synchronous in v1)
+- Handoff DTOs (`HandoffPayload`, `HandoffSnapshot`) — relay methods return `array` directly
 
 ## Success Criteria
 
@@ -49,5 +52,7 @@ large PHP/Laravel ecosystem. It enables:
    parameter types and return DTOs
 2. All DTOs match the Rust struct field names and types
 3. Stdio transport handles process lifecycle (spawn, communicate, shutdown)
-4. PHP 8.0+ compatible with no framework dependency
-5. Documentation in both English and Traditional Chinese
+4. `PluginHost` implements MCP JSON-RPC subset: `initialize`, `tools/list`, `tools/call`
+5. PHP 8.0+ compatible with no framework dependency
+6. Documentation in both English and Traditional Chinese
+7. PHPUnit tests covering Client, DTOs, and PluginHost

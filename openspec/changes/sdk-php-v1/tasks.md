@@ -7,60 +7,77 @@
 - [x] Create `openspec/config.yaml`
 - [x] Create `openspec/changes/sdk-php-v1/proposal.md`
 - [x] Create `openspec/changes/sdk-php-v1/design.md`
-- [ ] Create `composer.json`
-- [ ] Create `.gitignore`
-- [ ] Create `AGENTS.md`
-- [ ] Create `README.md` (English)
-- [ ] Create `README.zh-TW.md` (Traditional Chinese)
+- [x] Create `composer.json`
+- [x] Create `.gitignore`
+- [x] Create `AGENTS.md`
+- [x] Create `README.md` (English)
+- [x] Create `README.zh-TW.md` (Traditional Chinese)
+- [x] Create `phpunit.xml`
+- [x] Create `.github/workflows/ci.yml`
+- [x] Create `.github/workflows/release.yml`
 
 ### T2 — DTO Layer
-- [ ] Implement `NodeId` — value object
-- [ ] Implement `FileType` — backed enum
-- [ ] Implement `Node` — core node DTO with `fromArray()`
-- [ ] Implement `Edge` — core edge DTO with `fromArray()`
-- [ ] Implement `GraphMetadata` — graph metadata DTO
-- [ ] Implement `GraphOutput` — complete graph container
-- [ ] Implement `GraphSummary` — summary result DTO
-- [ ] Implement `WorkspaceContext` — workspace context DTO
-- [ ] Implement `MemoryQueryResult` — memory query result
-- [ ] Implement `ReindexResult` — reindex result DTO
-- [ ] Implement `ReviewFinding` — review finding DTO
-- [ ] Implement `TelemetryBinding` — telemetry binding DTO
-- [ ] Implement `CoverageResult` — coverage result DTO
-- [ ] Implement `RelayStatus` — relay status DTO
+- [x] Implement `NodeId` — value object
+- [x] Implement `FileType` — backed enum
+- [x] Implement `Node` — core node DTO with `fromArray()`
+- [x] Implement `Edge` — core edge DTO with `fromArray()`
+- [x] Implement `GraphMetadata` — graph metadata DTO
+- [x] Implement `GraphOutput` — complete graph container
+- [x] Implement `GraphSummary` — summary result DTO
+- [x] Implement `WorkspaceContext` — workspace context DTO
+- [x] Implement `MemoryQueryResult` — memory query result
+- [x] Implement `ReindexResult` — reindex result DTO
+- [x] Implement `ReviewFinding` — review finding DTO
+- [x] Implement `TelemetryBinding` — telemetry binding DTO
+- [x] Implement `CoverageResult` — coverage result DTO
+- [x] Implement `RelayStatus` — relay status DTO
+- [ ] ~~`HandoffPayload` / `HandoffSnapshot`~~ — intentionally omitted (relay methods return `array`)
 
 ### T3 — Exception Layer
-- [ ] Implement `GraphifyException` — base exception
-- [ ] Implement `TransportException` — transport/IO errors
-- [ ] Implement `ProtocolException` — JSON-RPC protocol errors
-- [ ] Implement `EngineException` — engine-level errors
+- [x] Implement `GraphifyException` — base exception
+- [x] Implement `TransportException` — transport/IO errors
+- [x] Implement `ProtocolException` — JSON-RPC protocol errors
+- [x] Implement `EngineException` — engine-level errors
 
 ### T4 — Transport Layer
-- [ ] Implement `McpTransport` — Stdio/JSON-RPC transport
-  - [ ] Process lifecycle (`start()`, `stop()`, destructor cleanup)
-  - [ ] `sendRequest(string $method, array $params): array`
-  - [ ] Request ID generation
-  - [ ] Error response handling
-  - [ ] Timeout handling
-  - [ ] Process auto-detection from PATH
+- [x] Implement `McpTransport` — Stdio/JSON-RPC transport
+  - [x] Process lifecycle (`start()`, `stop()`, destructor cleanup)
+  - [x] `sendRequest(string $method, array $params): array`
+  - [x] Request ID generation
+  - [x] Error response handling
+  - [x] Timeout handling
+  - [x] Process auto-detection from PATH
 
 ### T5 — Client Layer
-- [ ] Implement `GraphifyClient` — public API facade
-  - [ ] Constructor with project path, binary path, auto workspace_key derivation
-  - [ ] Core Graph methods (5 tools)
-  - [ ] Memory Query methods (1 tool)
-  - [ ] Relay/Handoff methods (7 tools)
-  - [ ] OpenDoc methods (3 tools)
-  - [ ] Review methods (4 tools)
-  - [ ] Telemetry methods (2 tools)
-  - [ ] Coverage methods (3 tools)
-  - [ ] Plugin Gateway method (1 tool)
+- [x] Implement `GraphifyClient` — public API facade
+  - [x] Constructor with project path, binary path, auto workspace_key derivation
+  - [x] Core Graph methods (5 tools)
+  - [x] Memory Query methods (1 tool)
+  - [x] Relay/Handoff methods (7 tools)
+  - [x] OpenDoc methods (3 tools)
+  - [x] Review methods (4 tools)
+  - [x] Telemetry methods (2 tools)
+  - [x] Coverage methods (3 tools)
+  - [x] Plugin Gateway method (1 tool)
 
-### T6 — Verification
-- [ ] Verify `composer dump-autoload` works
-- [ ] Basic syntax check with `php -l` on all files
-- [ ] Verify all 24+ tools are wrapped
-- [ ] Verify DTO field alignment with Rust structs
+### T6 — Plugin SDK Layer
+- [x] Implement `PluginHost` — JSON-RPC stdio host
+  - [x] `registerTool()` — chainable tool registration
+  - [x] `run()` — blocking stdin/stdout listener
+  - [x] `handleInitialize()` — protocol version + capabilities + tools
+  - [x] `handleToolsList()` — registered tools with schemas
+  - [x] `handleToolsCall()` — dispatch to handler
+  - [x] Notification support (silent discard)
+  - [x] Error handling (exceptions → JSON-RPC error response)
+
+### T7 — Test Coverage
+- [x] DTO tests (`NodeTest`, `EdgeTest`, `GraphOutputTest`, `MiscDtoTest`)
+- [x] Client tests (`GraphifyClientTest`)
+- [x] PluginHost tests (`PluginHostTest`)
+- [x] Verify `composer dump-autoload` works
+- [x] Basic syntax check with `php -l` on all files
+- [x] Verify all tools are wrapped
+- [x] Verify DTO field alignment with Rust structs
 
 ## Dependencies
 
@@ -68,5 +85,6 @@
 T1 (scaffolding) → T2 (DTOs) + T3 (exceptions)
 T2 + T3 → T4 (transport)
 T4 → T5 (client)
-T5 → T6 (verification)
+T1 → T6 (plugin SDK)  [independent from T2-T5]
+T5 + T6 → T7 (testing)
 ```

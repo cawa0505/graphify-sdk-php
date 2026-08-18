@@ -3,39 +3,47 @@
 ## Architecture Overview
 
 ```
-┌─────────────────────────────┐
-│   PHP Application / CLI     │
-│   (Laravel, Symfony, etc.)  │
-├─────────────────────────────┤
-│   graphify-sdk-php          │
-│                             │
-│  ┌───────────────────────┐  │
-│  │  GraphifyClient       │  │  ← Public API facade
-│  │  - graphSummary()     │  │
-│  │  - queryNodes()       │  │
-│  │  - tracePath()        │  │
-│  │  - memoryQuery()      │  │
-│  │  - ...                │  │
-│  └──────┬────────────────┘  │
-│         │                   │
-│  ┌──────▼────────────────┐  │
-│  │  McpTransport (Bridge) │  │  ← Stdio/JSON-RPC
-│  │  - sendRequest()       │  │
-│  │  - process lifecycle   │  │
-│  └──────┬────────────────┘  │
-│         │                   │
-│  ┌──────▼────────────────┐  │
-│  │  DTOs (Data Transfer)  │  │  ← Node, Edge, GraphOutput, etc.
-│  └───────────────────────┘  │
-│                             │
-│  ┌───────────────────────┐  │
-│  │  Exceptions            │  │  ← Typed error hierarchy
-│  └───────────────────────┘  │
-└──────────┬──────────────────┘
+┌─────────────────────────────────┐
+│   PHP Application / CLI         │
+│   (Laravel, Symfony, etc.)      │
+├─────────────────────────────────┤
+│   graphify-sdk-php              │
+│                                 │
+│  ┌───────────────────────────┐  │
+│  │  GraphifyClient (Client)  │  │  ← Query Graphify
+│  │  - graphSummary()         │  │
+│  │  - queryGraph()           │  │
+│  │  - tracePath()            │  │
+│  │  - memoryQuery()          │  │
+│  │  - 26 public methods      │  │
+│  └──────┬────────────────────┘  │
+│         │                       │
+│  ┌──────▼────────────────────┐  │
+│  │  McpTransport (Bridge)     │  │  ← Stdio/JSON-RPC
+│  │  - sendRequest()           │  │
+│  │  - process lifecycle       │  │
+│  └──────┬────────────────────┘  │
+│         │                       │
+│  ┌──────▼────────────────────┐  │
+│  │  DTOs (Data Transfer)      │  │  ← Node, Edge, GraphOutput, etc.
+│  └───────────────────────────┘  │
+│                                 │
+│  ┌───────────────────────────┐  │
+│  │  PluginHost (Plugin SDK)  │  │  ← Graphify plugin runner
+│  │  - registerTool()         │  │
+│  │  - run()                   │  │
+│  │  - handleInitialize()      │  │
+│  │  - handleToolsCall()       │  │
+│  └───────────────────────────┘  │
+│                                 │
+│  ┌───────────────────────────┐  │
+│  │  Exceptions                │  │  ← Typed error hierarchy
+│  └───────────────────────────┘  │
+└──────────┬──────────────────────┘
            │ Stdio (stdin/stdout)
-┌──────────▼──────────────────┐
-│  graphify-mcp (Rust binary)  │
-└─────────────────────────────┘
+┌──────────▼──────────────────────┐
+│  graphify-mcp (Rust binary)      │
+└─────────────────────────────────┘
 ```
 
 ## Directory Structure
@@ -43,9 +51,15 @@
 ```
 graphify-sdk-php/
 ├── composer.json
+├── phpunit.xml
 ├── AGENTS.md
 ├── README.md
 ├── README.zh-TW.md
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # CI — PHP 8.2+ lint + test
+│       └── release.yml         # Release — tag → GitHub Release → Packagist
 ├── openspec/
 │   ├── config.yaml
 │   └── changes/
@@ -53,32 +67,40 @@ graphify-sdk-php/
 │           ├── proposal.md
 │           ├── design.md
 │           └── tasks.md
-└── src/
-    ├── GraphifyClient.php          # Public API — wraps all tools
-    ├── Bridge/
-    │   └── McpTransport.php        # Stdio/JSON-RPC transport
-    ├── Dto/
-    │   ├── Node.php                # Core node data
-    │   ├── Edge.php                # Edge between nodes
-    │   ├── NodeId.php              # Node ID value object
-    │   ├── FileType.php            # File type enum
-    │   ├── GraphMetadata.php       # Graph metadata
-    │   ├── GraphOutput.php         # Complete graph (nodes+edges+metadata)
-    │   ├── WorkspaceContext.php    # Workspace context
-    │   ├── GraphSummary.php        # Summary result
-    │   ├── MemoryQueryResult.php   # Memory query result
-    │   ├── ReindexResult.php       # Reindex result
-    │   ├── ReviewFinding.php       # Review finding
-    │   ├── TelemetryBinding.php    # Telemetry binding
-    │   ├── CoverageResult.php      # Coverage result
-    │   ├── HandoffPayload.php      # Handoff payload
-    │   ├── HandoffSnapshot.php     # Handoff snapshot
-    │   └── RelayStatus.php         # Relay status
-    └── Exception/
-        ├── GraphifyException.php         # Base exception
-        ├── TransportException.php        # Transport/IO errors
-        ├── ProtocolException.php         # JSON-RPC protocol errors
-        └── EngineException.php           # Engine-level errors
+├── src/
+│   ├── GraphifyClient.php          # Public API — wraps all tools
+│   ├── Bridge/
+│   │   └── McpTransport.php        # Stdio/JSON-RPC transport
+│   ├── Plugin/
+│   │   └── PluginHost.php          # JSON-RPC stdio host (Graphify plugin runner)
+│   ├── Dto/
+│   │   ├── Node.php                # Core node data
+│   │   ├── Edge.php                # Edge between nodes
+│   │   ├── NodeId.php              # Node ID value object
+│   │   ├── FileType.php            # File type enum
+│   │   ├── GraphMetadata.php       # Graph metadata
+│   │   ├── GraphOutput.php         # Complete graph (nodes+edges+metadata)
+│   │   ├── WorkspaceContext.php    # Workspace context
+│   │   ├── GraphSummary.php        # Summary result
+│   │   ├── MemoryQueryResult.php   # Memory query result
+│   │   ├── ReindexResult.php       # Reindex result
+│   │   ├── ReviewFinding.php       # Review finding
+│   │   ├── TelemetryBinding.php    # Telemetry binding
+│   │   ├── CoverageResult.php      # Coverage result
+│   │   └── RelayStatus.php         # Relay status
+│   └── Exception/
+│       ├── GraphifyException.php         # Base exception
+│       ├── TransportException.php        # Transport/IO errors
+│       ├── ProtocolException.php         # JSON-RPC protocol errors
+│       └── EngineException.php           # Engine-level errors
+└── tests/
+    ├── GraphifyClientTest.php
+    ├── PluginHostTest.php
+    └── Dto/
+        ├── NodeTest.php
+        ├── EdgeTest.php
+        ├── GraphOutputTest.php
+        └── MiscDtoTest.php
 ```
 
 ## Transport Layer (McpTransport)
@@ -118,11 +140,12 @@ $client = new GraphifyClient(
 );
 ```
 
-Derivation (mirrors Rust): SipHash of canonicalized root path → hex string.
+Derivation (mirrors Rust): crc32 hash of canonicalized root path → hex string.
+PHP does not have SipHash built-in, so crc32 is used as a stable alternative.
 
 ### Tool Method Mapping
 
-Every `graphify-mcp` tool maps to a public method:
+Every `graphify-mcp` tool maps to a public method (26 total):
 
 #### Core Graph
 | Tool | Method | Returns |
@@ -181,6 +204,84 @@ Every `graphify-mcp` tool maps to a public method:
 | Tool | Method | Returns |
 |------|--------|---------|
 | `graphify_plugin_notify` | `pluginNotify(string $kind)` | `array` |
+
+## Plugin SDK Layer (PluginHost)
+
+### Role
+
+`PluginHost` is the **inbound** side of the SDK — it lets PHP scripts run as
+Graphify plugins via IPC subprocess. Graphify Core spawns the PHP process,
+communicates via JSON-RPC over stdin/stdout, and the PluginHost dispatches
+tool calls to registered PHP handlers.
+
+### Protocol
+
+Implements MCP JSON-RPC subset:
+
+| Method | Purpose |
+|--------|---------|
+| `initialize` | Returns protocol version, capabilities, and tool list |
+| `tools/list` | Returns registered tools with schemas |
+| `tools/call` | Dispatches to registered handler, returns result |
+| `notifications/*` | Silently accepted (no response) |
+
+### Plugin Host Lifecycle
+
+```
+Graphify Core (Rust)               PHP Plugin Process
+       │                                  │
+       │  proc_open("php analyzer.php")   │
+       │─────────────────────────────────>│
+       │                                  │
+       │  {"method":"initialize",...}     │
+       │─────────────────────────────────>│
+       │  {"tools":["analyze_schema",...]} │
+       │<─────────────────────────────────│
+       │                                  │
+       │  {"method":"tools/call",...}     │
+       │─────────────────────────────────>│
+       │  {"result":{...}}                │
+       │<─────────────────────────────────│
+       │                                  │
+       │  close stdin (EOF)               │
+       │─────────────────────────────────>│
+       │  exit(0)                         │
+       │<─────────────────────────────────│
+```
+
+### Usage
+
+```php
+<?php
+// analyzer.php — Graphify Plugin written in PHP
+use Graphify\Sdk\Plugin\PluginHost;
+
+$host = new PluginHost();
+
+$host->registerTool('analyze_schema', [
+    'description' => 'Analyze Laravel database schema',
+    'inputSchema' => [
+        'type'       => 'object',
+        'properties' => [
+            'migration_path' => ['type' => 'string'],
+        ],
+        'required' => ['migration_path'],
+    ],
+], function (array $args): array {
+    // Your PHP logic here — no Rust, no WASM
+    return analyzeMigrations($args['migration_path']);
+});
+
+$host->run(); // Blocks, reads stdin, writes stdout
+```
+
+### Implementation Notes
+
+- `registerTool()` is chainable (returns `$this`)
+- Handler exceptions propagate as JSON-RPC error responses (code -32603)
+- Notifications (requests without `id`) are silently discarded
+- EOF on stdin triggers clean exit(0)
+- Schema defaults: empty `inputSchema` if omitted
 
 ## DTO Design
 
@@ -254,6 +355,35 @@ class GraphSummary {
 }
 ```
 
+### CoverageResult
+
+```php
+class CoverageResult {
+    public readonly float $lineRate;
+    public readonly int $coveredLines;
+    public readonly int $totalLines;
+    public readonly ?array $nodeIds;
+
+    public static function fromArray(array $data): self;
+}
+```
+
+### RelayStatus
+
+```php
+class RelayStatus {
+    public readonly string $status;
+    public readonly ?string $activeBaton;
+    public readonly array $repos;
+
+    public static function fromArray(array $data): self;
+}
+```
+
+> **Note**: `HandoffPayload` and `HandoffSnapshot` DTOs are intentionally omitted.
+> Relay methods return `array` directly since handoff payloads have dynamic structure
+> that varies by repo. Static DTOs would add maintenance burden without type safety benefit.
+
 ## Exception Hierarchy
 
 ```
@@ -302,3 +432,36 @@ Stdio transport uses `proc_open()` from PHP core.
 
 5. **Lazy process start**: The transport process is spawned on first request, not in
    constructor, to allow configuration before connection.
+
+6. **crc32 workspace key**: PHP lacks SipHash built-in; crc32 provides a stable
+   cross-platform hash as an alternative.
+
+## Test Coverage
+
+### Test Files
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| `tests/Dto/NodeTest.php` | Node creation, fromArray, toArray, metadata, edge cases | 10+ assertions |
+| `tests/Dto/EdgeTest.php` | Edge creation, fromArray, toArray, metadata | 10+ assertions |
+| `tests/Dto/GraphOutputTest.php` | GraphOutput with nodes/edges, empty graph, metadata | 10+ assertions |
+| `tests/Dto/MiscDtoTest.php` | GraphSummary, NodeId, FileType, ReindexResult, CoverageResult, MemoryQueryResult, RelayStatus, WorkspaceContext, ReviewFinding, TelemetryBinding | 30+ assertions |
+| `tests/GraphifyClientTest.php` | Workspace key derivation, transport lifecycle, method mapping | 16 assertions |
+| `tests/PluginHostTest.php` | initialize, tools/list, tools/call, error handling, tool registration | 38 assertions |
+
+### Running Tests
+
+```bash
+vendor/bin/phpunit
+vendor/bin/phpunit tests/PluginHostTest.php  # Plugin-specific
+vendor/bin/phpunit tests/Dto/                # DTO-specific
+```
+
+### CI Workflow
+
+GitHub Actions CI (`.github/workflows/ci.yml`):
+
+- **Trigger**: push / pull request on main
+- **Matrix**: PHP 8.2+ (PHPUnit 11.x requires PHP >= 8.2)
+- **Steps**: composer install → php -l lint → phpunit
+- **Release** (`.github/workflows/release.yml`): on tag → CI + GitHub Release + Packagist auto-update
