@@ -8,7 +8,7 @@ knowledge graph capabilities over the MCP (Model Context Protocol) via Stdio/JSO
 - PHP 8.0+
 - `ext-json`
 - `ext-mbstring`
-- `graphify-mcp` binary on PATH (or configured path)
+- `graphify` binary on PATH (or configured path)
 
 ## Installation
 
@@ -55,8 +55,7 @@ $client->stop();
 
 ## API Reference
 
-The SDK wraps all 24+ `graphify-mcp` tools. See the full list in
-[openspec/changes/sdk-php-v1/design.md](openspec/changes/sdk-php-v1/design.md).
+The SDK wraps all 24+ `graphify` tools.
 
 ### Core Graph
 
@@ -117,13 +116,13 @@ The SDK wraps all 24+ `graphify-mcp` tools. See the full list in
 ## Architecture
 
 ```
-PHP App → GraphifyClient → McpTransport (Stdio/JSON-RPC) → graphify-mcp (Rust)
+PHP App → Client → Transport (Stdio/JSON-RPC) → graphify (Rust)
 ```
 
 - **Zero external dependencies**: uses only PHP built-in extensions
 - **Synchronous API**: single-threaded, request-response over stdio
-- **Auto workspace key**: derives from project path (mirrors Rust SipHash logic)
-- **Lazy process start**: transport spawns `graphify-mcp` on first request
+- **Auto workspace key**: derives from project path via CRC32 (cross-SDK consistent)
+- **Lazy process start**: transport spawns `graphify` on first request
 
 ## Project Structure
 
