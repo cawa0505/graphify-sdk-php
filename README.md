@@ -1,6 +1,6 @@
 # Graphify PHP SDK
 
-Official PHP SDK for [Graphify](https://github.com/cawa0505/GraphifySDK) — access
+Official PHP SDK for [Graphify](https://github.com/cawa0505/graphify) — access
 knowledge graph capabilities over the MCP (Model Context Protocol) via Stdio/JSON-RPC.
 
 ## Requirements
