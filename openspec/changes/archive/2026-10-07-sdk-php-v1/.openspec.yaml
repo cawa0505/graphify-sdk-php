@@ -1,0 +1,4 @@
+schema: spec-driven
+skip_specs: true
+created: 2026-09-20
+goal: Graphify SDK PHP Client 完整 DTO、Client 與 Relay 端點封裝實作

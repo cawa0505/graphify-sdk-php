@@ -31,7 +31,7 @@
 - [x] Implement `TelemetryBinding` — telemetry binding DTO
 - [x] Implement `CoverageResult` — coverage result DTO
 - [x] Implement `RelayStatus` — relay status DTO
-- [ ] ~~`HandoffPayload` / `HandoffSnapshot`~~ — intentionally omitted (relay methods return `array`)
+- [x] ~~`HandoffPayload` / `HandoffSnapshot`~~ — intentionally omitted (relay methods return `array`)
 
 ### T3 — Exception Layer
 - [x] Implement `GraphifyException` — base exception
